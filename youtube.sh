@@ -23,10 +23,16 @@ sudo curl 'https://raw.githubusercontent.com/kboghdady/youTube_ads_4_pi-hole/mas
 wait 
 
 # check to see if gawk is installed. if not it will install it
-dpkg -l | grep -qw gawk || sudo apt-get install gawk -y
+if [ -n "$(command -v apt-get)" ]; then
+    dpkg -l | grep -qw gawk || sudo apt-get install gawk -y
+elif [ -n "$(command -v yum)" ]; then
+    rpm -qa | grep -qw gawk || sudo yum install gawk -y
+else
+    echo "Unable to automatically install gawk."
+fi
 
 wait 
 # remove the duplicate records in place
-gawk -i inplace '!a[$0]++' $blackListFile
+gawk '!a[$0]++' $blackListFile > tmp && mv tmp $blackListFile
 wait 
-gawk -i inplace '!a[$0]++' $blacklist
+gawk '!a[$0]++' $blacklist > tmp && mv tmp $blacklist
