@@ -23,12 +23,17 @@ sudo curl 'https://raw.githubusercontent.com/kboghdady/youTube_ads_4_pi-hole/mas
 wait 
 
 # check to see if gawk is installed. if not it will install it
-if [ -n "$(command -v apt-get)" ]; then
-    dpkg -l | grep -qw gawk || sudo apt-get install gawk -y
-elif [ -n "$(command -v yum)" ]; then
-    rpm -qa | grep -qw gawk || sudo yum install gawk -y
-else
-    echo "Unable to automatically install gawk."
+if [ ! -n "$(command -v gawk)" ]; then
+    echo "gawk not found. Attempting to install (requires root!)."
+    if [ -n "$(command -v apt-get)" ]; then
+        dpkg -l | grep -qw gawk || sudo apt-get install gawk -y
+    elif [ -n "$(command -v yum)" ]; then
+        rpm -qa | grep -qw gawk || sudo yum install gawk -y
+    else
+        echo "No supported package manager available."
+        echo "Unable to automatically install gawk."
+        exit
+    fi
 fi
 
 wait 
@@ -36,3 +41,5 @@ wait
 gawk '!a[$0]++' $blackListFile > tmp && mv tmp $blackListFile
 wait 
 gawk '!a[$0]++' $blacklist > tmp && mv tmp $blacklist
+
+echo "Done! Updated $blackListFile and $blacklist"
